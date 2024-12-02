@@ -1,7 +1,7 @@
 Manually add partations on the topics
 
-Run Producer:
-python kafka/producers.py
+Run Producer as a module:
+python -m kafka.producers.py
 
 make migrations
 alembic revision --autogenerate -m "Initial migration"
