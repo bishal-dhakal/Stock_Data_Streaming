@@ -11,8 +11,8 @@ databases = "*"
 fastapi = {extras = ["all"] }
 python-dotenv = "*"
 psycopg2-binary = "*"
-pyspark = "*"
 alembic = "*"
+pyspark = "*"
 
 [dev-packages]
 

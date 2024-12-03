@@ -1,22 +1,17 @@
 from fastapi import FastAPI
 from app.routes import router
-from threading import Thread
-from kafka.consumerdb import start_consumer_db
 from core.database import Base, engine
 import uvicorn
 import signal
 import sys
-from spark.consumerspark import Consumer_Spark
+from spark.consumers import ConsumerSpark
 
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
-consumer_thread = Thread(target=start_consumer_db)
-consumer_thread.start()
-print("Started Kafka consumer threads.")
-
-Consumer_Spark()
+consumer = ConsumerSpark()
+consumer.start_streaming()
 
 app.include_router(router)
 

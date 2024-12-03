@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime
-from sqlalchemy.orm import relationship
 from core.database import Base
 
 class Stock(Base):
