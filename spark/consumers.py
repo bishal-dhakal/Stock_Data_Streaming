@@ -5,10 +5,13 @@ from pyspark.sql.types import (
     StringType,
     DoubleType,
     IntegerType,
-    TimestampType,
 )
 from pyspark.sql.functions import from_json, col, from_unixtime, date_format
 from utils.constants import TOPIC
+import redis
+import json
+import signal
+import sys
 
 
 class ConsumerSpark:
@@ -34,6 +37,10 @@ class ConsumerSpark:
                 StructField("created_at", DoubleType(), True),
             ]
         )
+
+        # redis client
+        self.redis_pool = redis.ConnectionPool(host="localhost", port=6379, db=0)
+        self.redis_client = redis.StrictRedis(connection_pool=self.redis_pool)
 
     def read_stream(self):
         raw_data = (
@@ -62,6 +69,33 @@ class ConsumerSpark:
         )
         return parsed_data
 
+    def save_to_redis(self, batch_df, batch_id):
+        pipeline = self.redis_client.pipeline()
+        for row in batch_df.collect():
+            stream_key = f"stock:{row['ticker']}"
+            
+            # Construct the data for the stream
+            message = {
+                "price": row["price"],
+                "volume": row["volume"],
+                "created_at": row["created_at"]
+            }
+
+            # Convert the data to JSON string (as Redis stream values are typically stored as strings)
+            value_json = json.dumps(message)
+
+            # XADD command to insert data into the Redis stream
+            pipeline.xadd(stream_key, {
+                "price": row["price"],
+                "volume": row["volume"],
+                "created_at": row["created_at"]
+            })
+            pipeline.expire(stream_key, 86400)  # Optional: set the stream to expire after 24 hours
+            print(f"Saved to Redis Stream: {stream_key} --> {message}")
+
+        # Execute the pipeline to batch the commands
+        pipeline.execute()
+
     def start_streaming(self):
         parsed_data = self.read_stream()
 
@@ -69,13 +103,11 @@ class ConsumerSpark:
 
         query = (
             parsed_data.writeStream.outputMode("append")
-            .format("console")
-            .option("truncate", "false")
+            .foreachBatch(self.save_to_redis)
             .start()
         )
 
         query.awaitTermination()
-
 
 def main():
     consumer = ConsumerSpark()

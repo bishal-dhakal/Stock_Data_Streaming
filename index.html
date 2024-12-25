@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Data</title>
+</head>
+<body>
+
+    <h1>Real-Time Data</h1>
+    <ul id="data-list">
+        <!-- Data items will be dynamically inserted here -->
+    </ul>
+
+    <script>
+        // Array to hold all data items
+        let data = [];
+
+        // Connect to the WebSocket server
+        const socket = new WebSocket('ws://localhost:8765');
+
+        // Event listener for receiving data
+        socket.onmessage = (event) => {
+            const newData = JSON.parse(event.data);  // Parse the incoming JSON data
+            data.push(newData);  // Add the new data to the array
+
+            // Update the HTML list to display the data
+            updateDataList();
+        };
+
+        // Function to update the displayed data in the list
+        function updateDataList() {
+            const dataList = document.getElementById('data-list');
+            dataList.innerHTML = '';  // Clear the list before adding new items
+
+            data.forEach((item, index) => {
+                // Create a new list item for each data entry
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<strong>${item.ticker}</strong> - ${item.price} - ${item.volume} - ${item.created_at}`;
+                dataList.appendChild(listItem);
+            });
+        }
+
+        // Clean up the WebSocket connection when the page is unloaded
+        window.onbeforeunload = () => {
+            socket.close();
+        };
+    </script>
+
+</body>
+</html>
