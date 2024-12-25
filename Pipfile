@@ -12,7 +12,9 @@ fastapi = {extras = ["all"] }
 python-dotenv = "*"
 psycopg2-binary = "*"
 alembic = "*"
+numpy = "*"
 pyspark = "*"
+redis = "*"
 
 [dev-packages]
 
