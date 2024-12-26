@@ -15,6 +15,7 @@ alembic = "*"
 numpy = "*"
 pyspark = "*"
 redis = "*"
+prometheus-client = "*"
 
 [dev-packages]
 
