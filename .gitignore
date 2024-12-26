@@ -1,1 +1,4 @@
 .env
+
+.mypy*
+__pycache__
