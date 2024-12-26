@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 BATCH_SIZE = 50
 
+# This consumer saves data to PostgreSQL for persistence and preservation.
 def consumerDB(consumer_id, db: Session):
     conf = {
         'bootstrap.servers': KAFKA_BROKER,
